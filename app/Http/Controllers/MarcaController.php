@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 
 class MarcaController extends Controller
 {
+    public function __construct(Marca $marca)
+    {
+        $this->marca = $marca;
+    }
     /**
      * Display a listing of the resource.
      *
@@ -14,7 +18,8 @@ class MarcaController extends Controller
      */
     public function index()
     {
-        return Marca::all();
+        $marcas = $this->marca->all();
+        return response()->json($marcas, 200);
     }
 
     /**
@@ -35,18 +40,33 @@ class MarcaController extends Controller
      */
     public function store(Request $request)
     {
-        return Marca::create($request->all());
+        $regras = [
+            'nome' => 'required|unique:marcas',
+            'imagem' => 'required'
+        ];
+        $feedback = [
+            'required' => 'O campo :attribute é obrigatório',
+            'nome.unique' => 'Nome da marca já existe'
+        ];
+        $request->validate($regras, $feedback);
+
+        $marca = $this->marca->create($request->all());
+        return response()->json($marca, 201);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Marca  $marca
+     * @param  Integer
      * @return \Illuminate\Http\Response
      */
-    public function show(Marca $marca)
+    public function show($id)
     {
-        return $marca;
+        $marca = $this->marca->find($id);
+        if ($marca === null) {
+            return response()->json(['erro' => 'Recurso inexistente'], 404);
+        }
+        return response()->json($marca, 200);
     }
 
     /**
@@ -64,24 +84,32 @@ class MarcaController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Marca  $marca
+     * @param  Integer
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Marca $marca)
+    public function update(Request $request, $id)
     {
+        $marca = $this->marca->find($id);
+        if ($marca === null) {
+            return response()->json(['erro' => 'Recurso inexistente'], 404);
+        }
         $marca->update($request->all());
-        return $marca;
+        return response()->json($marca, 200);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Marca  $marca
+     * @param  Integer
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Marca $marca)
+    public function destroy($id)
     {
+        $marca = $this->marca->find($id);
+        if ($marca === null) {
+            return response()->json(['erro' => 'Recurso inexistente'], 404);
+        }
         $marca->delete();
-        return ['msg' => 'Marca deletada'];
+        return response()->json(['msg' => 'Recurso removido com sucesso'], 200);
     }
 }
