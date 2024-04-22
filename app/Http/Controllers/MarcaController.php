@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MarcaController extends Controller
 {
@@ -18,7 +19,7 @@ class MarcaController extends Controller
      */
     public function index()
     {
-        $marcas = $this->marca->all();
+        $marcas = $this->marca->with('modelos')->get();
         return response()->json($marcas, 200);
     }
 
@@ -61,7 +62,7 @@ class MarcaController extends Controller
      */
     public function show($id)
     {
-        $marca = $this->marca->find($id);
+        $marca = $this->marca->with('modelos')->find($id);
         if ($marca === null) {
             return response()->json(['erro' => 'Recurso inexistente'], 404);
         }
@@ -105,8 +106,17 @@ class MarcaController extends Controller
             $request->validate($marca->rules(), $marca->feedback());
         }
 
+        if ($request->file('imagem')) {
+            Storage::disk('public')->delete($marca->imagem);
+        }
 
-        $marca->update($request->all());
+        $imagem = $request->file('imagem');
+        $imagem_urn = $imagem->store('imagens', 'public');
+
+        $marca->fill($request->all());
+        $marca->imagem = $imagem_urn;
+        $marca->save();
+
         return response()->json($marca, 200);
     }
 
@@ -122,6 +132,9 @@ class MarcaController extends Controller
         if ($marca === null) {
             return response()->json(['erro' => 'Recurso inexistente'], 404);
         }
+
+        Storage::disk('public')->delete($marca->imagem);
+
         $marca->delete();
         return response()->json(['msg' => 'Recurso removido com sucesso'], 200);
     }
