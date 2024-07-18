@@ -38,6 +38,10 @@
         </div>
 
         <modal-component id="modalMarca" titulo="Adicionar Marca">
+            <template v-slot:alertas>
+                <alert-component tipo="success"></alert-component>
+                <alert-component tipo="danger"></alert-component>
+            </template>
             <template v-slot:conteudo>
                 <div class="form-group">
                     <input-container-component titulo="Nome da Marca" id="novoNome" id-help="novoNomeHelp"
@@ -65,7 +69,20 @@
 </template>
 
 <script>
+import { computed } from 'vue';
+
 export default {
+    computed: {
+        token() {
+            let token = document.cookie.split(';').find(indice => {
+                return indice.includes('token=')
+            })
+
+            token = token.split('=')[1]
+            token = 'Bearer ' + token
+            return token
+        }
+    },
     data() {
         return {
             nomeMarca: '',
@@ -84,14 +101,15 @@ export default {
             let config = {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Authorization': this.token
                 }
             }
             axios.post(this.urlBase, formData, config)
                 .then(response => {
-                    
+                    //adicionar código para tratar resposta
                 })
-                .catch (errors => {
+                .catch(errors => {
                     console.log(errors)
                 })
         }
