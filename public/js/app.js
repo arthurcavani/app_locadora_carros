@@ -5221,15 +5221,30 @@ __webpack_require__.r(__webpack_exports__);
       arquivoImagem: [],
       urlBase: 'http://localhost:8000/api/v1/marca',
       transacaoStatus: '',
-      transacaoDetalhes: {}
+      transacaoDetalhes: {},
+      marcas: []
     };
   },
   methods: {
+    carregarLista: function carregarLista() {
+      var _this = this;
+      var config = {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': this.token
+        }
+      };
+      axios.get(this.urlBase, config).then(function (response) {
+        _this.marcas = response.data;
+      })["catch"](function (errors) {
+        console.log(errors);
+      });
+    },
     carregarImagem: function carregarImagem(e) {
       this.arquivoImagem = e.target.files;
     },
     salvar: function salvar() {
-      var _this = this;
+      var _this2 = this;
       var formData = new FormData();
       formData.append('nome', this.nomeMarca);
       formData.append('imagem', this.arquivoImagem[0]);
@@ -5241,18 +5256,21 @@ __webpack_require__.r(__webpack_exports__);
         }
       };
       axios.post(this.urlBase, formData, config).then(function (response) {
-        _this.transacaoStatus = 'adicionado';
-        _this.transacaoDetalhes = {
+        _this2.transacaoStatus = 'adicionado';
+        _this2.transacaoDetalhes = {
           mensagem: 'ID do registro: ' + response.data.id
         };
       })["catch"](function (errors) {
-        _this.transacaoStatus = 'erro';
-        _this.transacaoDetalhes = {
+        _this2.transacaoStatus = 'erro';
+        _this2.transacaoDetalhes = {
           mensagem: errors.response.data.message,
           dados: errors.response.data.errors
         };
       });
     }
+  },
+  mounted: function mounted() {
+    this.carregarLista();
   }
 });
 
@@ -5286,7 +5304,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({});
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  props: ['dados', 'titulos']
+});
 
 /***/ }),
 
@@ -5716,7 +5736,12 @@ var render = function render() {
     scopedSlots: _vm._u([{
       key: "conteudo",
       fn: function fn() {
-        return [_c("table-component")];
+        return [_c("table-component", {
+          attrs: {
+            dados: _vm.marcas,
+            titulos: ["id", "nome", "imagem"]
+          }
+        })];
       },
       proxy: true
     }, {
@@ -5915,47 +5940,33 @@ __webpack_require__.r(__webpack_exports__);
 var render = function render() {
   var _vm = this,
     _c = _vm._self._c;
-  return _vm._m(0);
-};
-var staticRenderFns = [function () {
-  var _vm = this,
-    _c = _vm._self._c;
   return _c("table", {
     staticClass: "table table-hover"
-  }, [_c("thead", [_c("tr", [_c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("#")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("First")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Last")]), _vm._v(" "), _c("th", {
-    attrs: {
-      scope: "col"
-    }
-  }, [_vm._v("Handle")])])]), _vm._v(" "), _c("tbody", [_c("tr", [_c("th", {
-    attrs: {
-      scope: "row"
-    }
-  }, [_vm._v("1")]), _vm._v(" "), _c("td", [_vm._v("Mark")]), _vm._v(" "), _c("td", [_vm._v("Otto")]), _vm._v(" "), _c("td", [_vm._v("@mdo")])]), _vm._v(" "), _c("tr", [_c("th", {
-    attrs: {
-      scope: "row"
-    }
-  }, [_vm._v("2")]), _vm._v(" "), _c("td", [_vm._v("Jacob")]), _vm._v(" "), _c("td", [_vm._v("Thornton")]), _vm._v(" "), _c("td", [_vm._v("@fat")])]), _vm._v(" "), _c("tr", [_c("th", {
-    attrs: {
-      scope: "row"
-    }
-  }, [_vm._v("3")]), _vm._v(" "), _c("td", {
-    attrs: {
-      colspan: "2"
-    }
-  }, [_vm._v("Larry the Bird")]), _vm._v(" "), _c("td", [_vm._v("@twitter")])])])]);
-}];
+  }, [_c("thead", [_c("tr", _vm._l(_vm.titulos, function (t, key) {
+    return _c("th", {
+      key: key,
+      staticClass: "text-uppercase",
+      attrs: {
+        scope: "col"
+      }
+    }, [_vm._v(_vm._s(t))]);
+  }), 0)]), _vm._v(" "), _c("tbody", _vm._l(_vm.dados, function (obj) {
+    return _c("tr", {
+      key: obj.id
+    }, _vm._l(obj, function (valor, chave) {
+      return _vm.titulos.includes(chave) ? _c("td", {
+        key: chave
+      }, [chave == "imagem" ? _c("span", [_c("img", {
+        attrs: {
+          src: "/storage/" + valor,
+          width: "30",
+          height: "30"
+        }
+      })]) : _c("span", [_vm._v("\n                " + _vm._s(valor) + "\n            ")])]) : _vm._e();
+    }), 0);
+  }), 0)]);
+};
+var staticRenderFns = [];
 render._withStripped = true;
 
 

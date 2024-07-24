@@ -27,7 +27,7 @@
                 </card-component>
                 <card-component titulo="Lista de Marcas">
                     <template v-slot:conteudo>
-                        <table-component></table-component>
+                        <table-component :dados="marcas" :titulos="['id', 'nome', 'imagem']"></table-component>
                     </template>
                     <template v-slot:rodape>
                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
@@ -64,7 +64,6 @@
                 <button type="button" class="btn btn-primary" @click="salvar()">Salvar</button>
             </template>
         </modal-component>
-
     </div>
 </template>
 
@@ -89,10 +88,26 @@ export default {
             arquivoImagem: [],
             urlBase: 'http://localhost:8000/api/v1/marca',
             transacaoStatus: '',
-            transacaoDetalhes: {}
+            transacaoDetalhes: {},
+            marcas: []
         }
     },
     methods: {
+        carregarLista(){
+            let config = {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': this.token
+                }
+            }
+            axios.get(this.urlBase, config)
+            .then(response => {
+                this.marcas = response.data
+            })
+            .catch(errors => {
+                console.log(errors)
+            }) 
+        },
         carregarImagem(e) {
             this.arquivoImagem = e.target.files
         },
@@ -122,6 +137,9 @@ export default {
                     }
                 })
         }
+    },
+    mounted() {
+        this.carregarLista()
     }
 }
 </script>
