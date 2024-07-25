@@ -5222,7 +5222,9 @@ __webpack_require__.r(__webpack_exports__);
       urlBase: 'http://localhost:8000/api/v1/marca',
       transacaoStatus: '',
       transacaoDetalhes: {},
-      marcas: []
+      marcas: {
+        data: []
+      }
     };
   },
   methods: {
@@ -5305,7 +5307,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  props: ['dados', 'titulos']
+  props: ['dados', 'titulos'],
+  computed: {
+    dadosFiltrados: function dadosFiltrados() {
+      var campos = Object.keys(this.titulos);
+      var dadosFiltrados = [];
+      this.dados.map(function (item, chave) {
+        var itemFiltrado = {};
+        campos.forEach(function (campo) {
+          itemFiltrado[campo] = item[campo];
+        });
+        dadosFiltrados.push(itemFiltrado);
+      });
+      return dadosFiltrados;
+    }
+  }
 });
 
 /***/ }),
@@ -5738,8 +5754,25 @@ var render = function render() {
       fn: function fn() {
         return [_c("table-component", {
           attrs: {
-            dados: _vm.marcas,
-            titulos: ["id", "nome", "imagem"]
+            dados: _vm.marcas.data,
+            titulos: {
+              id: {
+                titulo: "ID",
+                tipo: "texto"
+              },
+              nome: {
+                titulo: "Nome",
+                tipo: "texto"
+              },
+              imagem: {
+                titulo: "Imagem",
+                tipo: "imagem"
+              },
+              created_at: {
+                titulo: "Data de Criação",
+                tipo: "data"
+              }
+            }
           }
         })];
       },
@@ -5945,24 +5978,23 @@ var render = function render() {
   }, [_c("thead", [_c("tr", _vm._l(_vm.titulos, function (t, key) {
     return _c("th", {
       key: key,
-      staticClass: "text-uppercase",
       attrs: {
         scope: "col"
       }
-    }, [_vm._v(_vm._s(t))]);
-  }), 0)]), _vm._v(" "), _c("tbody", _vm._l(_vm.dados, function (obj) {
+    }, [_vm._v(_vm._s(t.titulo))]);
+  }), 0)]), _vm._v(" "), _c("tbody", _vm._l(_vm.dadosFiltrados, function (obj, chave) {
     return _c("tr", {
-      key: obj.id
-    }, _vm._l(obj, function (valor, chave) {
-      return _vm.titulos.includes(chave) ? _c("td", {
-        key: chave
-      }, [chave == "imagem" ? _c("span", [_c("img", {
+      key: chave
+    }, _vm._l(obj, function (valor, chaveValor) {
+      return _c("td", {
+        key: chaveValor
+      }, [_vm.titulos[chaveValor].tipo == "texto" ? _c("span", [_vm._v(_vm._s(valor))]) : _vm._e(), _vm._v(" "), _vm.titulos[chaveValor].tipo == "data" ? _c("span", [_vm._v(_vm._s(valor))]) : _vm._e(), _vm._v(" "), _vm.titulos[chaveValor].tipo == "imagem" ? _c("span", [_c("img", {
         attrs: {
           src: "/storage/" + valor,
           width: "30",
           height: "30"
         }
-      })]) : _c("span", [_vm._v("\n                " + _vm._s(valor) + "\n            ")])]) : _vm._e();
+      })]) : _vm._e()]);
     }), 0);
   }), 0)]);
 };

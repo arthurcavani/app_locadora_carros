@@ -27,7 +27,15 @@
                 </card-component>
                 <card-component titulo="Lista de Marcas">
                     <template v-slot:conteudo>
-                        <table-component :dados="marcas" :titulos="['id', 'nome', 'imagem']"></table-component>
+                        <table-component 
+                        :dados="marcas.data" 
+                        :titulos="{
+                            id: {titulo: 'ID', tipo: 'texto'},
+                            nome: {titulo: 'Nome', tipo: 'texto'},
+                            imagem: {titulo: 'Imagem', tipo: 'imagem'},
+                            created_at: {titulo: 'Data de Criação', tipo: 'data'}
+                        }"
+                        ></table-component>
                     </template>
                     <template v-slot:rodape>
                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
@@ -89,7 +97,7 @@ export default {
             urlBase: 'http://localhost:8000/api/v1/marca',
             transacaoStatus: '',
             transacaoDetalhes: {},
-            marcas: []
+            marcas: { data: [] }
         }
     },
     methods: {
