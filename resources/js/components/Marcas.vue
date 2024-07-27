@@ -9,37 +9,47 @@
                                 <input-container-component titulo="ID" id="inputId" id-help="idHelp"
                                     texto-ajuda="Opcional. Informe o ID da marca">
                                     <input type="number" class="form-control" id="inputId" aria-describedby="idHelp"
-                                        placeholder="ID">
+                                        placeholder="ID" v-model="busca.id">
                                 </input-container-component>
                             </div>
                             <div class="col mb-3">
                                 <input-container-component titulo="Nome da Marca" id="inputNome" id-help="nomeHelp"
                                     texto-ajuda="Opcional. Informe o nome da marca">
                                     <input type="text" class="form-control" id="inputNome" aria-describedby="nomeHelp"
-                                        placeholder="Nome da marca">
+                                        placeholder="Nome da marca" v-model="busca.nome">
                                 </input-container-component>
                             </div>
                         </div>
                     </template>
                     <template v-slot:rodape>
-                        <button type="submit" class="btn btn-primary btn-sm">Pesquisar</button>
+                        <button type="submit" class="btn btn-primary btn-sm float-end"
+                            @click="pesquisar()">Pesquisar</button>
                     </template>
                 </card-component>
                 <card-component titulo="Lista de Marcas">
                     <template v-slot:conteudo>
-                        <table-component 
-                        :dados="marcas.data" 
-                        :titulos="{
-                            id: {titulo: 'ID', tipo: 'texto'},
-                            nome: {titulo: 'Nome', tipo: 'texto'},
-                            imagem: {titulo: 'Imagem', tipo: 'imagem'},
-                            created_at: {titulo: 'Data de Criação', tipo: 'data'}
-                        }"
-                        ></table-component>
+                        <table-component :dados="marcas.data" :titulos="{
+                            id: { titulo: 'ID', tipo: 'texto' },
+                            nome: { titulo: 'Nome', tipo: 'texto' },
+                            imagem: { titulo: 'Imagem', tipo: 'imagem' },
+                            created_at: { titulo: 'Data de Criação', tipo: 'data' }
+                        }"></table-component>
                     </template>
                     <template v-slot:rodape>
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                            data-bs-target="#modalMarca">Adicionar</button>
+                        <div class="row">
+                            <div class="col-10">
+                                <paginate-component>
+                                    <li v-for="l, key in marcas.links" :key="key"
+                                        :class="l.active ? 'page-item active' : 'page-item'" @click="paginacao(l)">
+                                        <a class="page-link" v-html="l.label"></a>
+                                    </li>
+                                </paginate-component>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-primary btn-sm float-end" data-bs-toggle="modal"
+                                    data-bs-target="#modalMarca">Adicionar</button>
+                            </div>
+                        </div>
                     </template>
                 </card-component>
             </div>
@@ -47,8 +57,10 @@
 
         <modal-component id="modalMarca" titulo="Adicionar Marca">
             <template v-slot:alertas>
-                <alert-component tipo="success" :detalhes="transacaoDetalhes" titulo="Marca cadastrada com sucesso" v-if="transacaoStatus == 'adicionado'"></alert-component>
-                <alert-component tipo="danger" :detalhes="transacaoDetalhes" titulo="Erro ao cadastrar a marca" v-if="transacaoStatus == 'erro'"></alert-component>
+                <alert-component tipo="success" :detalhes="transacaoDetalhes" titulo="Marca cadastrada com sucesso"
+                    v-if="transacaoStatus == 'adicionado'"></alert-component>
+                <alert-component tipo="danger" :detalhes="transacaoDetalhes" titulo="Erro ao cadastrar a marca"
+                    v-if="transacaoStatus == 'erro'"></alert-component>
             </template>
             <template v-slot:conteudo>
                 <div class="form-group">
@@ -95,26 +107,54 @@ export default {
             nomeMarca: '',
             arquivoImagem: [],
             urlBase: 'http://localhost:8000/api/v1/marca',
+            urlPaginacao: '',
+            urlFiltro: '',
             transacaoStatus: '',
             transacaoDetalhes: {},
-            marcas: { data: [] }
+            marcas: { data: [] },
+            busca: { id: '', nome: '' }
         }
     },
     methods: {
-        carregarLista(){
+        pesquisar() {
+            let filtro = ''
+            for (let chave in this.busca) {
+                if (this.busca[chave]) {
+                    if (filtro != '') {
+                        filtro += ";"
+                    }
+                    filtro += chave + ':like:' + this.busca[chave]
+                }
+            }
+            if (filtro != '') {
+                this.urlPaginacao = 'page=1'
+                this.urlFiltro = '&filtro=' + filtro
+            } else {
+                this.urlFiltro = ''
+            }
+            this.carregarLista()
+        },
+        paginacao(l) {
+            if (l.url) {
+                this.urlPaginacao = l.url.split('?')[1]
+                this.carregarLista()
+            }
+        },
+        carregarLista() {
+            let url = this.urlBase + '?' + this.urlPaginacao + this.urlFiltro
             let config = {
                 headers: {
                     'Accept': 'application/json',
                     'Authorization': this.token
                 }
             }
-            axios.get(this.urlBase, config)
-            .then(response => {
-                this.marcas = response.data
-            })
-            .catch(errors => {
-                console.log(errors)
-            }) 
+            axios.get(url, config)
+                .then(response => {
+                    this.marcas = response.data
+                })
+                .catch(errors => {
+                    console.log(errors)
+                })
         },
         carregarImagem(e) {
             this.arquivoImagem = e.target.files
