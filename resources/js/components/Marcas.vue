@@ -28,17 +28,16 @@
                 </card-component>
                 <card-component titulo="Lista de Marcas">
                     <template v-slot:conteudo>
-                        <table-component 
-                            :dados="marcas.data" 
-                            :visualizar="{ visivel: true, dataToggle: 'modal', dataTarget: '#modalMarcaVisualizar'}"
+                        <table-component :dados="marcas.data"
+                            :visualizar="{ visivel: true, dataToggle: 'modal', dataTarget: '#modalMarcaVisualizar' }"
                             :atualizar="true"
-                            :remover="true"
+                            :remover="{ visivel: true, dataToggle: 'modal', dataTarget: '#modalMarcaRemover' }"
                             :titulos="{
-                            id: { titulo: 'ID', tipo: 'texto' },
-                            nome: { titulo: 'Nome', tipo: 'texto' },
-                            imagem: { titulo: 'Imagem', tipo: 'imagem' },
-                            created_at: { titulo: 'Data de Criação', tipo: 'data' }
-                        }"></table-component>
+                                id: { titulo: 'ID', tipo: 'texto' },
+                                nome: { titulo: 'Nome', tipo: 'texto' },
+                                imagem: { titulo: 'Imagem', tipo: 'imagem' },
+                                created_at: { titulo: 'Data de Criação', tipo: 'data' }
+                            }"></table-component>
                     </template>
                     <template v-slot:rodape>
                         <div class="row">
@@ -60,7 +59,7 @@
             </div>
         </div>
 
-        
+
         <!-- Inicio modal add marca -->
         <modal-component id="modalMarca" titulo="Adicionar Marca">
             <template v-slot:alertas>
@@ -96,12 +95,22 @@
         <!-- Inicio modal visualizar marca -->
         <modal-component id="modalMarcaVisualizar" titulo="Visualizar Marca">
 
-            <template v-slot:alertas>
-
-            </template>
+            <template v-slot:alertas></template>
 
             <template v-slot:conteudo>
-                Teste
+                <input-container-component titulo="ID">
+                    <input type="text" class="form-control" :value="$store.state.item.id" disabled>
+                </input-container-component>
+                <input-container-component titulo="Nome da Marca">
+                    <input type="text" class="form-control" :value="$store.state.item.nome" disabled>
+                </input-container-component>
+                <input-container-component titulo="Imagem">
+                    <img :src="'/storage/' + $store.state.item.imagem" width="30" height="30"
+                        v-if="$store.state.item.imagem">
+                </input-container-component>
+                <input-container-component titulo="Data de Criação">
+                    <input type="text" class="form-control" :value="$store.state.item.created_at" disabled>
+                </input-container-component>
             </template>
 
             <template v-slot:rodape>
@@ -110,13 +119,41 @@
 
         </modal-component>
         <!-- Fim modal visualizar marca -->
+
+        <!-- Inicio modal remover marca -->
+        <modal-component id="modalMarcaRemover" titulo="Remover Marca">
+
+            <template v-slot:alertas>
+                <alert-component tipo="success" titulo="Transação concluída com sucesso" :detalhes="$store.state.transacao" v-if="$store.state.transacao.status == 'sucesso'"></alert-component>
+                <alert-component tipo="danger" titulo="Erro ao realizar transação" :detalhes="$store.state.transacao" v-if="$store.state.transacao.status == 'erro'"></alert-component>
+            </template>
+
+            <template v-slot:conteudo v-if="$store.state.transacao.status != 'sucesso'">
+                <input-container-component titulo="ID">
+                    <input type="text" class="form-control" :value="$store.state.item.id" disabled>
+                </input-container-component>
+                <input-container-component titulo="Nome da Marca">
+                    <input type="text" class="form-control" :value="$store.state.item.nome" disabled>
+                </input-container-component>
+            </template>
+
+            <template v-slot:rodape>
+                <button type="button" class="btn btn-danger" @click="remover()" v-if="$store.state.transacao.status != 'sucesso'">Remover</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </template>
+
+        </modal-component>
+        <!-- Fim modal remover marca -->
     </div>
 </template>
 
 <script>
 import { computed } from 'vue';
+import InputContainer from './InputContainer.vue';
+import Alert from './Alert.vue';
 
 export default {
+    components: { InputContainer, Alert },
     computed: {
         token() {
             let token = document.cookie.split(';').find(indice => {
@@ -142,6 +179,32 @@ export default {
         }
     },
     methods: {
+        remover() {
+            let confirmacao = confirm('Tem certeza que deseja remover esse registro?')
+            if (!confirmacao) {
+                return false
+            }
+            let config = {
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': this.token
+                }
+            }
+            let url = this.urlBase + '/' + this.$store.state.item.id
+            let formData = new FormData()
+            formData.append('_method', 'delete')
+            axios.post(url, formData, config)
+                .then(response => {
+                    this.$store.state.transacao.status = 'sucesso'
+                    this.$store.state.transacao.mensagem = response.data.msg
+                    this.carregarLista()
+                })
+                .catch(errors => {
+                    this.$store.state.transacao.status = 'erro'
+                    this.$store.state.transacao.mensagem = errors.response.data.erro
+                    console.log(errors)
+                })
+        },
         pesquisar() {
             let filtro = ''
             for (let chave in this.busca) {

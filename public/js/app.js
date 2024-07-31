@@ -5203,8 +5203,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
+/* harmony import */ var _InputContainer_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./InputContainer.vue */ "./resources/js/components/InputContainer.vue");
+/* harmony import */ var _Alert_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Alert.vue */ "./resources/js/components/Alert.vue");
+
+
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  components: {
+    InputContainer: _InputContainer_vue__WEBPACK_IMPORTED_MODULE_0__["default"],
+    Alert: _Alert_vue__WEBPACK_IMPORTED_MODULE_1__["default"]
+  },
   computed: {
     token: function token() {
       var token = document.cookie.split(';').find(function (indice) {
@@ -5234,6 +5242,31 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
+    remover: function remover() {
+      var _this = this;
+      var confirmacao = confirm('Tem certeza que deseja remover esse registro?');
+      if (!confirmacao) {
+        return false;
+      }
+      var config = {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': this.token
+        }
+      };
+      var url = this.urlBase + '/' + this.$store.state.item.id;
+      var formData = new FormData();
+      formData.append('_method', 'delete');
+      axios.post(url, formData, config).then(function (response) {
+        _this.$store.state.transacao.status = 'sucesso';
+        _this.$store.state.transacao.mensagem = response.data.msg;
+        _this.carregarLista();
+      })["catch"](function (errors) {
+        _this.$store.state.transacao.status = 'erro';
+        _this.$store.state.transacao.mensagem = errors.response.data.erro;
+        console.log(errors);
+      });
+    },
     pesquisar: function pesquisar() {
       var filtro = '';
       for (var chave in this.busca) {
@@ -5259,7 +5292,7 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     carregarLista: function carregarLista() {
-      var _this = this;
+      var _this2 = this;
       var url = this.urlBase + '?' + this.urlPaginacao + this.urlFiltro;
       var config = {
         headers: {
@@ -5268,7 +5301,7 @@ __webpack_require__.r(__webpack_exports__);
         }
       };
       axios.get(url, config).then(function (response) {
-        _this.marcas = response.data;
+        _this2.marcas = response.data;
       })["catch"](function (errors) {
         console.log(errors);
       });
@@ -5277,7 +5310,7 @@ __webpack_require__.r(__webpack_exports__);
       this.arquivoImagem = e.target.files;
     },
     salvar: function salvar() {
-      var _this2 = this;
+      var _this3 = this;
       var formData = new FormData();
       formData.append('nome', this.nomeMarca);
       formData.append('imagem', this.arquivoImagem[0]);
@@ -5289,13 +5322,13 @@ __webpack_require__.r(__webpack_exports__);
         }
       };
       axios.post(this.urlBase, formData, config).then(function (response) {
-        _this2.transacaoStatus = 'adicionado';
-        _this2.transacaoDetalhes = {
+        _this3.transacaoStatus = 'adicionado';
+        _this3.transacaoDetalhes = {
           mensagem: 'ID do registro: ' + response.data.id
         };
       })["catch"](function (errors) {
-        _this2.transacaoStatus = 'erro';
-        _this2.transacaoDetalhes = {
+        _this3.transacaoStatus = 'erro';
+        _this3.transacaoDetalhes = {
           mensagem: errors.response.data.message,
           dados: errors.response.data.errors
         };
@@ -5354,6 +5387,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
   props: ['dados', 'titulos', 'atualizar', 'visualizar', 'remover'],
+  methods: {
+    setStore: function setStore(obj) {
+      this.$store.state.transacao.status = '';
+      this.$store.state.transacao.mensagem = '';
+      this.$store.state.item = obj;
+    }
+  },
   computed: {
     dadosFiltrados: function dadosFiltrados() {
       var campos = Object.keys(this.titulos);
@@ -5842,7 +5882,11 @@ var render = function render() {
               dataTarget: "#modalMarcaVisualizar"
             },
             atualizar: true,
-            remover: true,
+            remover: {
+              visivel: true,
+              dataToggle: "modal",
+              dataTarget: "#modalMarcaRemover"
+            },
             titulos: {
               id: {
                 titulo: "ID",
@@ -6020,7 +6064,56 @@ var render = function render() {
     }, {
       key: "conteudo",
       fn: function fn() {
-        return [_vm._v("\n            Teste\n        ")];
+        return [_c("input-container-component", {
+          attrs: {
+            titulo: "ID"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.$store.state.item.id
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            titulo: "Nome da Marca"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.$store.state.item.nome
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            titulo: "Imagem"
+          }
+        }, [_vm.$store.state.item.imagem ? _c("img", {
+          attrs: {
+            src: "/storage/" + _vm.$store.state.item.imagem,
+            width: "30",
+            height: "30"
+          }
+        }) : _vm._e()]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            titulo: "Data de Criação"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.$store.state.item.created_at
+          }
+        })])];
       },
       proxy: true
     }, {
@@ -6036,6 +6129,84 @@ var render = function render() {
       },
       proxy: true
     }])
+  }), _vm._v(" "), _c("modal-component", {
+    attrs: {
+      id: "modalMarcaRemover",
+      titulo: "Remover Marca"
+    },
+    scopedSlots: _vm._u([{
+      key: "alertas",
+      fn: function fn() {
+        return [_vm.$store.state.transacao.status == "sucesso" ? _c("alert-component", {
+          attrs: {
+            tipo: "success",
+            titulo: "Transação concluída com sucesso",
+            detalhes: _vm.$store.state.transacao
+          }
+        }) : _vm._e(), _vm._v(" "), _vm.$store.state.transacao.status == "erro" ? _c("alert-component", {
+          attrs: {
+            tipo: "danger",
+            titulo: "Erro ao realizar transação",
+            detalhes: _vm.$store.state.transacao
+          }
+        }) : _vm._e()];
+      },
+      proxy: true
+    }, _vm.$store.state.transacao.status != "sucesso" ? {
+      key: "conteudo",
+      fn: function fn() {
+        return [_c("input-container-component", {
+          attrs: {
+            titulo: "ID"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.$store.state.item.id
+          }
+        })]), _vm._v(" "), _c("input-container-component", {
+          attrs: {
+            titulo: "Nome da Marca"
+          }
+        }, [_c("input", {
+          staticClass: "form-control",
+          attrs: {
+            type: "text",
+            disabled: ""
+          },
+          domProps: {
+            value: _vm.$store.state.item.nome
+          }
+        })])];
+      },
+      proxy: true
+    } : null, {
+      key: "rodape",
+      fn: function fn() {
+        return [_vm.$store.state.transacao.status != "sucesso" ? _c("button", {
+          staticClass: "btn btn-danger",
+          attrs: {
+            type: "button"
+          },
+          on: {
+            click: function click($event) {
+              return _vm.remover();
+            }
+          }
+        }, [_vm._v("Remover")]) : _vm._e(), _vm._v(" "), _c("button", {
+          staticClass: "btn btn-secondary",
+          attrs: {
+            type: "button",
+            "data-bs-dismiss": "modal"
+          }
+        }, [_vm._v("Fechar")])];
+      },
+      proxy: true
+    }], null, true)
   })], 1);
 };
 var staticRenderFns = [];
@@ -6153,7 +6324,7 @@ var render = function render() {
         scope: "col"
       }
     }, [_vm._v(_vm._s(t.titulo))]);
-  }), _vm._v(" "), _vm.atualizar || _vm.visualizar.visivel || _vm.remover ? _c("th") : _vm._e()], 2)]), _vm._v(" "), _c("tbody", _vm._l(_vm.dadosFiltrados, function (obj, chave) {
+  }), _vm._v(" "), _vm.atualizar || _vm.visualizar.visivel || _vm.remover.visivel ? _c("th") : _vm._e()], 2)]), _vm._v(" "), _c("tbody", _vm._l(_vm.dadosFiltrados, function (obj, chave) {
     return _c("tr", {
       key: chave
     }, [_vm._l(obj, function (valor, chaveValor) {
@@ -6166,16 +6337,30 @@ var render = function render() {
           height: "30"
         }
       })]) : _vm._e()]);
-    }), _vm._v(" "), _vm.atualizar || _vm.visualizar.visivel || _vm.remover ? _c("td", [_vm.visualizar.visivel ? _c("button", {
+    }), _vm._v(" "), _vm.atualizar || _vm.visualizar.visivel || _vm.remover.visivel ? _c("td", [_vm.visualizar.visivel ? _c("button", {
       staticClass: "btn btn-outline-primary btn-sm",
       attrs: {
         "data-bs-toggle": _vm.visualizar.dataToggle,
         "data-bs-target": _vm.visualizar.dataTarget
+      },
+      on: {
+        click: function click($event) {
+          return _vm.setStore(obj);
+        }
       }
     }, [_vm._v("Visualizar")]) : _vm._e(), _vm._v(" "), _vm.atualizar ? _c("button", {
       staticClass: "btn btn-outline-primary btn-sm"
-    }, [_vm._v("Atualizar")]) : _vm._e(), _vm._v(" "), _vm.remover ? _c("button", {
-      staticClass: "btn btn-outline-danger btn-sm"
+    }, [_vm._v("Atualizar")]) : _vm._e(), _vm._v(" "), _vm.remover.visivel ? _c("button", {
+      staticClass: "btn btn-outline-danger btn-sm",
+      attrs: {
+        "data-bs-toggle": _vm.remover.dataToggle,
+        "data-bs-target": _vm.remover.dataTarget
+      },
+      on: {
+        click: function click($event) {
+          return _vm.setStore(obj);
+        }
+      }
     }, [_vm._v("Remover")]) : _vm._e()]) : _vm._e()], 2);
   }), 0)])]);
 };
@@ -6208,7 +6393,11 @@ window.Vue = (__webpack_require__(/*! vue */ "./node_modules/vue/dist/vue.esm.js
 Vue.use(vuex__WEBPACK_IMPORTED_MODULE_0__["default"]);
 var store = new vuex__WEBPACK_IMPORTED_MODULE_0__["default"].Store({
   state: {
-    teste: 'testando123'
+    item: {},
+    transacao: {
+      status: '',
+      mensagem: ''
+    }
   }
 });
 
