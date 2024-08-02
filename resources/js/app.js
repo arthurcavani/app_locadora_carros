@@ -46,6 +46,20 @@ Vue.component('paginate-component', require('./components/Paginate.vue').default
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+Vue.filter('formataDataHoraGlobal', function(d){
+    if (!d) {
+        return ''
+    }
+    d = d.split('T')
+    let data = d[0]
+    let hora = d[1]
+    data = data.split('-')
+    data = data[2]+'/'+data[1]+'/'+data[0]
+    hora = hora.split('.')
+    hora = hora[0]
+    return data+' '+hora
+})
+
 const app = new Vue({
     el: '#app',
     store

@@ -6469,7 +6469,7 @@ var render = function render() {
     }, [_vm._l(obj, function (valor, chaveValor) {
       return _c("td", {
         key: chaveValor
-      }, [_vm.titulos[chaveValor].tipo == "texto" ? _c("span", [_vm._v(_vm._s(valor))]) : _vm._e(), _vm._v(" "), _vm.titulos[chaveValor].tipo == "data" ? _c("span", [_vm._v(_vm._s(valor))]) : _vm._e(), _vm._v(" "), _vm.titulos[chaveValor].tipo == "imagem" ? _c("span", [_c("img", {
+      }, [_vm.titulos[chaveValor].tipo == "texto" ? _c("span", [_vm._v(_vm._s(valor))]) : _vm._e(), _vm._v(" "), _vm.titulos[chaveValor].tipo == "data" ? _c("span", [_vm._v(_vm._s(_vm._f("formataDataHoraGlobal")(valor)))]) : _vm._e(), _vm._v(" "), _vm.titulos[chaveValor].tipo == "imagem" ? _c("span", [_c("img", {
         attrs: {
           src: "/storage/" + valor,
           width: "30",
@@ -6578,6 +6578,19 @@ Vue.component('paginate-component', (__webpack_require__(/*! ./components/Pagina
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
+Vue.filter('formataDataHoraGlobal', function (d) {
+  if (!d) {
+    return '';
+  }
+  d = d.split('T');
+  var data = d[0];
+  var hora = d[1];
+  data = data.split('-');
+  data = data[2] + '/' + data[1] + '/' + data[0];
+  hora = hora.split('.');
+  hora = hora[0];
+  return data + ' ' + hora;
+});
 var app = new Vue({
   el: '#app',
   store: store
@@ -6621,6 +6634,19 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 //     cluster: process.env.MIX_PUSHER_APP_CLUSTER,
 //     forceTLS: true
 // });
+
+// interceptar os requests do app
+
+axios.interceptors.request.use(function (config) {
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
+axios.interceptors.response.use(function (response) {
+  return response;
+}, function (error) {
+  return Promise.reject(error);
+});
 
 /***/ }),
 
