@@ -5213,16 +5213,6 @@ __webpack_require__.r(__webpack_exports__);
     InputContainer: _InputContainer_vue__WEBPACK_IMPORTED_MODULE_0__["default"],
     Alert: _Alert_vue__WEBPACK_IMPORTED_MODULE_1__["default"]
   },
-  computed: {
-    token: function token() {
-      var token = document.cookie.split(';').find(function (indice) {
-        return indice.includes('token=');
-      });
-      token = token.split('=')[1];
-      token = 'Bearer ' + token;
-      return token;
-    }
-  },
   data: function data() {
     return {
       nomeMarca: '',
@@ -5253,9 +5243,7 @@ __webpack_require__.r(__webpack_exports__);
       var url = this.urlBase + '/' + this.$store.state.item.id;
       var config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json',
-          'Authorization': this.token
+          'Content-Type': 'multipart/form-data'
         }
       };
       axios.post(url, formData, config).then(function (response) {
@@ -5276,16 +5264,10 @@ __webpack_require__.r(__webpack_exports__);
       if (!confirmacao) {
         return false;
       }
-      var config = {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': this.token
-        }
-      };
       var url = this.urlBase + '/' + this.$store.state.item.id;
       var formData = new FormData();
       formData.append('_method', 'delete');
-      axios.post(url, formData, config).then(function (response) {
+      axios.post(url, formData).then(function (response) {
         _this2.$store.state.transacao.status = 'sucesso';
         _this2.$store.state.transacao.mensagem = response.data.msg;
         _this2.carregarLista();
@@ -5322,13 +5304,7 @@ __webpack_require__.r(__webpack_exports__);
     carregarLista: function carregarLista() {
       var _this3 = this;
       var url = this.urlBase + '?' + this.urlPaginacao + this.urlFiltro;
-      var config = {
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': this.token
-        }
-      };
-      axios.get(url, config).then(function (response) {
+      axios.get(url).then(function (response) {
         _this3.marcas = response.data;
       })["catch"](function (errors) {
         console.log(errors);
@@ -5344,9 +5320,7 @@ __webpack_require__.r(__webpack_exports__);
       formData.append('imagem', this.arquivoImagem[0]);
       var config = {
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json',
-          'Authorization': this.token
+          'Content-Type': 'multipart/form-data'
         }
       };
       axios.post(this.urlBase, formData, config).then(function (response) {
@@ -6638,6 +6612,16 @@ window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 // interceptar os requests do app
 
 axios.interceptors.request.use(function (config) {
+  //Pega token dos cookies
+  var token = document.cookie.split(';').find(function (indice) {
+    return indice.includes('token=');
+  });
+  token = token.split('=')[1];
+  token = 'Bearer ' + token;
+
+  //intercepta e define para todas requisições
+  config.headers.Accept = 'application/json';
+  config.headers.Authorization = token;
   return config;
 }, function (error) {
   return Promise.reject(error);
@@ -6645,6 +6629,12 @@ axios.interceptors.request.use(function (config) {
 axios.interceptors.response.use(function (response) {
   return response;
 }, function (error) {
+  if (error.response.status == 401 && error.response.data.message == 'Token has expired') {
+    axios.post('http://localhost:8000/api/refresh').then(function (response) {
+      document.cookie = 'token=' + response.data.token + ';SameSite=Lax';
+      window.location.reload();
+    })["catch"](function (errors) {});
+  }
   return Promise.reject(error);
 });
 

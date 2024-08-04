@@ -193,17 +193,6 @@ import Alert from './Alert.vue';
 
 export default {
     components: { InputContainer, Alert },
-    computed: {
-        token() {
-            let token = document.cookie.split(';').find(indice => {
-                return indice.includes('token=')
-            })
-
-            token = token.split('=')[1]
-            token = 'Bearer ' + token
-            return token
-        }
-    },
     data() {
         return {
             nomeMarca: '',
@@ -228,9 +217,7 @@ export default {
             let url = this.urlBase + '/' + this.$store.state.item.id
             let config = {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json',
-                    'Authorization': this.token
+                    'Content-Type': 'multipart/form-data'
                 }
             }
 
@@ -253,16 +240,11 @@ export default {
             if (!confirmacao) {
                 return false
             }
-            let config = {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': this.token
-                }
-            }
+            
             let url = this.urlBase + '/' + this.$store.state.item.id
             let formData = new FormData()
             formData.append('_method', 'delete')
-            axios.post(url, formData, config)
+            axios.post(url, formData)
                 .then(response => {
                     this.$store.state.transacao.status = 'sucesso'
                     this.$store.state.transacao.mensagem = response.data.msg
@@ -300,13 +282,8 @@ export default {
         },
         carregarLista() {
             let url = this.urlBase + '?' + this.urlPaginacao + this.urlFiltro
-            let config = {
-                headers: {
-                    'Accept': 'application/json',
-                    'Authorization': this.token
-                }
-            }
-            axios.get(url, config)
+            
+            axios.get(url)
                 .then(response => {
                     this.marcas = response.data
                 })
@@ -323,9 +300,7 @@ export default {
             formData.append('imagem', this.arquivoImagem[0])
             let config = {
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'application/json',
-                    'Authorization': this.token
+                    'Content-Type': 'multipart/form-data'
                 }
             }
             axios.post(this.urlBase, formData, config)
